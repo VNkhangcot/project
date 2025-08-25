@@ -17,7 +17,10 @@ import {
   X,
   LogOut,
   BarChart3,
-  Star
+  Star,
+  Briefcase,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import NotificationPopup from '@/components/notifications/NotificationPopup';
 import {
@@ -36,6 +39,15 @@ interface UserLayoutProps {
 const navigation = [
   { name: 'Trang chủ', href: '/shop', icon: ShoppingBag },
   { name: 'Sản phẩm', href: '/shop/products', icon: ShoppingBag },
+  { 
+    name: 'Tìm việc', 
+    href: '/shop/jobs', 
+    icon: Briefcase,
+    children: [
+      { name: 'Danh sách việc làm', href: '/shop/jobs' },
+      { name: 'Đơn ứng tuyển', href: '/shop/jobs/applications' }
+    ]
+  },
   { name: 'Đơn hàng', href: '/shop/orders', icon: BarChart3 },
   { name: 'Yêu thích', href: '/shop/wishlist', icon: Heart },
   { name: 'Đánh giá', href: '/shop/reviews', icon: Star },
@@ -45,11 +57,91 @@ const navigation = [
 export default function UserLayout({ children }: UserLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Tìm việc']);
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
+  };
+
+  const toggleExpanded = (itemName: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemName) 
+        ? prev.filter(name => name !== itemName)
+        : [...prev, itemName]
+    );
+  };
+
+  const renderNavigationItem = (item: any, isMobile = false) => {
+    const isActive = pathname === item.href;
+    const isExpanded = expandedItems.includes(item.name);
+    const hasChildren = item.children && item.children.length > 0;
+
+    if (hasChildren) {
+      return (
+        <div key={item.name}>
+          <button
+            onClick={() => toggleExpanded(item.name)}
+            className={cn(
+              'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+              isActive || item.children.some((child: any) => pathname === child.href)
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+            )}
+          >
+            <div className="flex items-center">
+              <item.icon className="h-5 w-5 mr-3" />
+              {item.name}
+            </div>
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+          {isExpanded && (
+            <div className="ml-6 mt-1 space-y-1">
+              {item.children.map((child: any) => {
+                const childIsActive = pathname === child.href;
+                return (
+                  <Link
+                    key={child.name}
+                    href={child.href}
+                    className={cn(
+                      'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      childIsActive
+                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-100'
+                        : 'text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700/50'
+                    )}
+                    onClick={isMobile ? () => setMobileMenuOpen(false) : undefined}
+                  >
+                    {child.name}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        key={item.name}
+        href={item.href}
+        className={cn(
+          'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+          isActive
+            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        )}
+        onClick={isMobile ? () => setMobileMenuOpen(false) : undefined}
+      >
+        <item.icon className="h-5 w-5 mr-3" />
+        {item.name}
+      </Link>
+    );
   };
 
   return (
@@ -179,25 +271,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
               </div>
             </div>
             <nav className="px-4 py-2 space-y-1">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                        : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
-                    )}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <item.icon className="h-5 w-5 mr-3" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+              {navigation.map((item) => renderNavigationItem(item, true))}
             </nav>
           </div>
         )}
@@ -208,24 +282,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
         {/* Sidebar - Desktop */}
         <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:top-16 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700">
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                      : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
-                  )}
-                >
-                  <item.icon className="h-5 w-5 mr-3" />
-                  {item.name}
-                </Link>
-              );
-            })}
+            {navigation.map((item) => renderNavigationItem(item, false))}
           </nav>
         </aside>
 
