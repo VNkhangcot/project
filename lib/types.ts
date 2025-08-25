@@ -52,7 +52,12 @@ export type Permission =
   | 'system_settings'
   | 'audit_logs'
   | 'security_monitoring'
-  | 'server_monitoring';
+  | 'server_monitoring'
+  | 'view_products'
+  | 'manage_cart'
+  | 'place_orders'
+  | 'write_reviews'
+  | 'manage_profile';
 
 // Auth types
 export interface LoginCredentials {
@@ -322,6 +327,142 @@ export interface ExchangeRateHistory {
   rate: number;
   source: string;
   createdAt: string;
+}
+
+// Product interfaces
+export interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  images: string[];
+  category: string;
+  stock: number;
+  enterpriseId: string;
+  enterprise?: Enterprise;
+  isActive: boolean;
+  specifications?: { [key: string]: string };
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProductCategory {
+  _id: string;
+  name: string;
+  description: string;
+  icon: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Cart interfaces
+export interface CartItem {
+  _id: string;
+  productId: string;
+  product?: Product;
+  quantity: number;
+  price: number;
+  currency: string;
+}
+
+export interface Cart {
+  _id: string;
+  userId: string;
+  items: CartItem[];
+  totalAmount: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Order interfaces
+export interface Order {
+  _id: string;
+  userId: string;
+  user?: User;
+  items: OrderItem[];
+  totalAmount: number;
+  currency: string;
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  shippingAddress: Address;
+  billingAddress?: Address;
+  paymentMethod: string;
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItem {
+  _id: string;
+  productId: string;
+  product?: Product;
+  quantity: number;
+  price: number;
+  currency: string;
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone?: string;
+}
+
+// Review interfaces
+export interface ProductReview {
+  _id: string;
+  productId: string;
+  product?: Product;
+  userId: string;
+  user?: User;
+  rating: number; // 1-5
+  title: string;
+  comment: string;
+  images?: string[];
+  isVerifiedPurchase: boolean;
+  helpfulVotes: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// User profile interfaces
+export interface UserProfile {
+  _id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: 'male' | 'female' | 'other';
+  avatar?: string;
+  addresses: Address[];
+  preferences: {
+    language: string;
+    currency: string;
+    notifications: {
+      email: boolean;
+      sms: boolean;
+      push: boolean;
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Shopping statistics
+export interface ShoppingStats {
+  totalOrders: number;
+  totalSpent: number;
+  currency: string;
+  favoriteCategories: { category: string; count: number }[];
+  monthlySpending: { month: string; amount: number }[];
+  recentOrders: Order[];
 }
 
 // Query parameters

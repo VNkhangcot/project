@@ -1,4 +1,63 @@
 // Mock data for development
+export const mockProducts = [
+  {
+    id: '1',
+    name: 'iPhone 15 Pro Max',
+    description: 'Điện thoại thông minh cao cấp với chip A17 Pro',
+    price: 29990000,
+    originalPrice: 32990000,
+    image: '/api/placeholder/300/300',
+    category: 'electronics',
+    rating: 4.8,
+    reviews: 1250,
+    isHot: true,
+    inStock: true,
+    stock: 50
+  },
+  {
+    id: '2',
+    name: 'MacBook Air M3',
+    description: 'Laptop siêu mỏng với chip M3 mạnh mẽ',
+    price: 32990000,
+    originalPrice: 35990000,
+    image: '/api/placeholder/300/300',
+    category: 'electronics',
+    rating: 4.8,
+    reviews: 890,
+    isHot: true,
+    inStock: true,
+    stock: 25
+  },
+  {
+    id: '3',
+    name: 'Áo sơ mi nam công sở',
+    description: 'Áo sơ mi nam chất liệu cotton cao cấp',
+    price: 299000,
+    originalPrice: 399000,
+    image: '/api/placeholder/300/300',
+    category: 'fashion',
+    rating: 4.5,
+    reviews: 320,
+    isHot: true,
+    inStock: true,
+    stock: 100
+  },
+  {
+    id: '4',
+    name: 'Nồi cơm điện Panasonic',
+    description: 'Nồi cơm điện cao cấp 1.8L',
+    price: 2590000,
+    originalPrice: 2990000,
+    image: '/api/placeholder/300/300',
+    category: 'home',
+    rating: 4.6,
+    reviews: 450,
+    isHot: false,
+    inStock: true,
+    stock: 30
+  }
+];
+
 export const mockUsers = [
   {
     _id: '1',
@@ -780,5 +839,40 @@ export const mockCredentials = {
   'editor@company.com': {
     password: 'editor123',
     user: mockUsers[3]
+  },
+  'user@shop.com': {
+    password: 'user123',
+    user: {
+      _id: '5',
+      name: 'Nguyễn Văn A',
+      email: 'user@shop.com',
+      role: {
+        _id: 'role5',
+        name: 'Customer',
+        description: 'Khách hàng mua sắm',
+        permissions: ['view_products', 'manage_cart', 'place_orders', 'write_reviews', 'manage_profile'],
+        isDefault: false,
+        isActive: true,
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z'
+      },
+      status: 'active' as const,
+      avatar: '',
+      lastLogin: '2024-01-15T10:30:00.000Z',
+      loginAttempts: 0,
+      twoFactorEnabled: false,
+      emailVerified: true,
+      preferences: {
+        language: 'vi' as const,
+        theme: 'system' as const,
+        notifications: {
+          email: true,
+          push: true,
+          sms: false
+        }
+      },
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-15T10:30:00.000Z'
+    }
   }
 };
