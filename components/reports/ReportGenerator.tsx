@@ -60,7 +60,7 @@ export default function ReportGenerator() {
   const [description, setDescription] = useState('');
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
-  const [format, setFormat] = useState('pdf');
+  const [outputFormat, setOutputFormat] = useState('pdf');
   const [schedule, setSchedule] = useState('manual');
 
   const handleFieldChange = (fieldId: string, checked: boolean) => {
@@ -92,7 +92,7 @@ export default function ReportGenerator() {
       description,
       dateRange,
       fields: selectedFields,
-      format,
+      format: outputFormat,
       schedule,
     });
     // Here you would typically call an API to generate the report
@@ -230,7 +230,7 @@ export default function ReportGenerator() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Định dạng</Label>
-                <Select value={format} onValueChange={setFormat}>
+                <Select value={outputFormat} onValueChange={setOutputFormat}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

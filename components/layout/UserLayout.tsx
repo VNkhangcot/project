@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
+  Home,
+  Package,
+  Building2,
   ShoppingBag, 
   ShoppingCart, 
   User, 
@@ -20,7 +23,13 @@ import {
   Star,
   Briefcase,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Users,
+  CreditCard,
+  Store,
+  Warehouse,
+  Coffee,
+  Gamepad2
 } from 'lucide-react';
 import NotificationPopup from '@/components/notifications/NotificationPopup';
 import {
@@ -37,8 +46,8 @@ interface UserLayoutProps {
 }
 
 const navigation = [
-  { name: 'Trang chủ', href: '/shop', icon: ShoppingBag },
-  { name: 'Sản phẩm', href: '/shop/products', icon: ShoppingBag },
+  { name: 'Trang chủ', href: '/shop', icon: Home },
+  { name: 'Sản phẩm', href: '/shop/products', icon: Package },
   { 
     name: 'Tìm việc', 
     href: '/shop/jobs', 
@@ -48,18 +57,103 @@ const navigation = [
       { name: 'Đơn ứng tuyển', href: '/shop/jobs/applications' }
     ]
   },
+  {
+    name: 'Không gian làm việc',
+    href: '/shop/workspace',
+    icon: Users,
+    children: [
+      { name: 'Tổng quan', href: '/shop/workspace' },
+      { name: 'Quản lý công việc', href: '/shop/workspace/tasks' },
+      { name: 'Báo cáo', href: '/shop/workspace/reports' },
+      { name: 'Nhân viên', href: '/shop/workspace/employees' },
+      { name: 'Tài liệu', href: '/shop/workspace/documents' },
+      { name: 'Lịch làm việc', href: '/shop/workspace/calendar' },
+      { name: 'Tin nhắn', href: '/shop/workspace/messages' }
+    ]
+  },
+  {
+    name: 'POS & Bán hàng',
+    href: '/shop/pos',
+    icon: CreditCard,
+    children: [
+      { name: 'Điểm bán hàng (POS)', href: '/shop/pos' },
+      { name: 'Quản lý bán hàng', href: '/shop/pos/sales' },
+      { name: 'Hóa đơn & Thanh toán', href: '/shop/pos/invoices' },
+      { name: 'Khách hàng', href: '/shop/pos/customers' },
+      { name: 'Khuyến mãi', href: '/shop/pos/promotions' }
+    ]
+  },
+  {
+    name: 'Quản lý kho',
+    href: '/shop/inventory',
+    icon: Warehouse,
+    children: [
+      { name: 'Tồn kho', href: '/shop/inventory' },
+      { name: 'Nhập kho', href: '/shop/inventory/import' },
+      { name: 'Xuất kho', href: '/shop/inventory/export' },
+      { name: 'Kiểm kê', href: '/shop/inventory/stocktake' },
+      { name: 'Báo cáo kho', href: '/shop/inventory/reports' }
+    ]
+  },
+  {
+    name: 'Quán Bida',
+    href: '/shop/billiards',
+    icon: Gamepad2,
+    children: [
+      { name: 'Quản lý bàn', href: '/shop/billiards' },
+      { name: 'Menu & Đồ uống', href: '/shop/billiards/menu' },
+      { name: 'Tính tiền', href: '/shop/billiards/billing' },
+      { name: 'Lịch sử chơi', href: '/shop/billiards/history' },
+      { name: 'Báo cáo doanh thu', href: '/shop/billiards/reports' }
+    ]
+  },
+  {
+    name: 'Quán Cafe',
+    href: '/shop/cafe',
+    icon: Coffee,
+    children: [
+      { name: 'Quản lý bàn', href: '/shop/cafe' },
+      { name: 'Menu & Thức uống', href: '/shop/cafe/menu' },
+      { name: 'Đặt món', href: '/shop/cafe/orders' },
+      { name: 'Thanh toán', href: '/shop/cafe/billing' },
+      { name: 'Báo cáo bán hàng', href: '/shop/cafe/reports' }
+    ]
+  },
   { name: 'Đơn hàng', href: '/shop/orders', icon: BarChart3 },
   { name: 'Yêu thích', href: '/shop/wishlist', icon: Heart },
   { name: 'Đánh giá', href: '/shop/reviews', icon: Star },
+  { name: 'Đăng ký doanh nghiệp', href: '/shop/enterprise/register', icon: Building2 },
   { name: 'Hồ sơ', href: '/shop/profile', icon: User },
 ];
 
 export default function UserLayout({ children }: UserLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Tìm việc']);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const pathname = usePathname();
   const { user, logout } = useAuth();
+
+  // Auto-expand parent menu when on child page
+  useEffect(() => {
+    const autoExpandParents = () => {
+      const newExpanded: string[] = [];
+      
+      navigation.forEach(item => {
+        if (item.children) {
+          const hasActiveChild = item.children.some((child: any) => pathname === child.href);
+          if (hasActiveChild && !expandedItems.includes(item.name)) {
+            newExpanded.push(item.name);
+          }
+        }
+      });
+      
+      if (newExpanded.length > 0) {
+        setExpandedItems(prev => [...prev, ...newExpanded]);
+      }
+    };
+
+    autoExpandParents();
+  }, [pathname]);
 
   const handleLogout = () => {
     logout();
@@ -147,7 +241,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -287,7 +381,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
         </aside>
 
         {/* Main content area */}
-        <main className="flex-1 md:ml-64">
+        <main className="flex-1 md:ml-64 pt-16">
           <div className="p-6">
             {children}
           </div>

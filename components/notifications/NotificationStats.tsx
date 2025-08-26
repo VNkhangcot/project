@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { NotificationService } from '@/services/notificationService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+// import { Progress } from '@/components/ui/progress';
 import {
   BarChart,
   Bar,
@@ -193,7 +193,12 @@ export default function NotificationStats() {
               </div>
               <Eye className="h-8 w-8 text-green-600" />
             </div>
-            <Progress value={readRate} className="h-2" />
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-green-600 h-2 rounded-full" 
+                style={{ width: `${readRate}%` }}
+              ></div>
+            </div>
             <p className="text-xs text-slate-500 mt-2">
               {stats.totalReads.toLocaleString()} / {stats.totalRecipients.toLocaleString()} đã đọc
             </p>
@@ -209,7 +214,12 @@ export default function NotificationStats() {
               </div>
               <MousePointer className="h-8 w-8 text-purple-600" />
             </div>
-            <Progress value={clickRate} className="h-2" />
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-purple-600 h-2 rounded-full" 
+                style={{ width: `${clickRate}%` }}
+              ></div>
+            </div>
             <p className="text-xs text-slate-500 mt-2">
               {stats.totalClicks.toLocaleString()} / {stats.totalReads.toLocaleString()} đã click
             </p>

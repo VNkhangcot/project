@@ -208,7 +208,10 @@ export default function JobsPage() {
               </div>
 
               {/* Category Filter */}
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+<Select value={selectedCategory} onValueChange={(value) => {
+  console.log("Selected Category:", value); // Debug log
+  setSelectedCategory(value);
+}}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="Chọn ngành nghề" />
                 </SelectTrigger>

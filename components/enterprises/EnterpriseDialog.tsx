@@ -8,21 +8,20 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { BusinessTypeService } from '@/services/enterpriseService';
-import { SubscriptionService } from '@/services/subscriptionService';
-import { BusinessType, Enterprise, SubscriptionPackage } from '@/lib/types';
+import { EnterpriseService } from '@/services/enterpriseService';
+import { BusinessType, Enterprise } from '@/lib/types';
 
 interface EnterpriseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   enterprise?: Enterprise | null;
   onClose: () => void;
+  onSuccess?: (enterprise: Enterprise) => void;
 }
 
-export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClose }: EnterpriseDialogProps) {
+export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClose, onSuccess }: EnterpriseDialogProps) {
   const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
-  const [subscriptionPackages, setSubscriptionPackages] = useState<SubscriptionPackage[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -38,14 +37,11 @@ export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClo
       phone: '',
       email: ''
     },
-    status: 'pending',
-    subscriptionPlan: 'basic',
-    userLimit: 50
+    status: 'pending'
   });
 
   useEffect(() => {
     loadBusinessTypes();
-    loadSubscriptionPackages();
   }, []);
 
   useEffect(() => {
@@ -65,9 +61,7 @@ export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClo
           phone: '',
           email: ''
         },
-        status: enterprise.status || 'pending',
-        subscriptionPlan: enterprise.subscriptionPlan || 'basic',
-        userLimit: enterprise.userLimit || 50
+        status: enterprise.status || 'pending'
       });
     } else {
       setFormData({
@@ -85,9 +79,7 @@ export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClo
           phone: '',
           email: ''
         },
-        status: 'pending',
-        subscriptionPlan: 'basic',
-        userLimit: 50
+        status: 'pending'
       });
     }
   }, [enterprise]);
@@ -101,48 +93,48 @@ export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClo
     }
   };
 
-  const loadSubscriptionPackages = async () => {
-    try {
-      const response = await SubscriptionService.getSubscriptionPackages({ status: 'active' });
-      setSubscriptionPackages(response.data || []);
-    } catch (error) {
-      console.error('Error loading subscription packages:', error);
-    }
-  };
 
   const handleBusinessTypeChange = (businessTypeId: string) => {
     const selectedBusinessType = businessTypes.find(bt => bt._id === businessTypeId);
     setFormData(prev => ({
       ...prev,
-      businessTypeId,
-      userLimit: selectedBusinessType?.defaultUserLimit || 50
+      businessTypeId
     }));
   };
 
-  const handleSubscriptionChange = (subscriptionPlan: string) => {
-    const selectedPackage = subscriptionPackages.find(pkg => pkg.code.toLowerCase() === subscriptionPlan);
-    setFormData(prev => ({
-      ...prev,
-      subscriptionPlan,
-      userLimit: selectedPackage?.limits.users || prev.userLimit
-    }));
-  };
 
-  const getSubscriptionPackageInfo = (planCode: string) => {
-    return subscriptionPackages.find(pkg => pkg.code.toLowerCase() === planCode);
-  };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Saving enterprise:', formData);
-    onClose();
+    try {
+      const selectedBusinessType = businessTypes.find(bt => bt._id === formData.businessTypeId);
+      const payload: Partial<Enterprise> = {
+        name: formData.name,
+        code: formData.code,
+        businessType: selectedBusinessType || (businessTypes.length ? businessTypes[0] : (undefined as any)),
+        taxCode: formData.taxCode,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        website: formData.website,
+        contactPerson: formData.contactPerson,
+        status: formData.status as any
+      };
+      
+      let res;
+      if (enterprise) {
+        res = await EnterpriseService.updateEnterprise(enterprise._id, payload);
+      } else {
+        res = await EnterpriseService.createEnterprise(payload);
+      }
+      
+      if (res.data && onSuccess) onSuccess(res.data);
+    } catch (error) {
+      console.error('Error saving enterprise:', error);
+    } finally {
+      onClose();
+    }
   };
 
   return (
@@ -328,67 +320,6 @@ export default function EnterpriseDialog({ open, onOpenChange, enterprise, onClo
             </CardContent>
           </Card>
 
-          {/* Subscription Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Cài đặt dịch vụ</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="status">Trạng thái</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Chờ duyệt</SelectItem>
-                      <SelectItem value="active">Hoạt động</SelectItem>
-                      <SelectItem value="inactive">Không hoạt động</SelectItem>
-                      <SelectItem value="suspended">Bị đình chỉ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="subscriptionPlan">Gói dịch vụ</Label>
-                  <Select value={formData.subscriptionPlan} onValueChange={handleSubscriptionChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subscriptionPackages.map((pkg) => (
-                        <SelectItem key={pkg._id} value={pkg.code.toLowerCase()}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{pkg.name}</span>
-                            <Badge variant="secondary" className="ml-2">
-                              {formatPrice(pkg.price.monthly)}/tháng
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {formData.subscriptionPlan && getSubscriptionPackageInfo(formData.subscriptionPlan) && (
-                    <div className="text-xs text-slate-600 mt-1">
-                      <p>Giới hạn: {getSubscriptionPackageInfo(formData.subscriptionPlan)?.limits.users} người dùng</p>
-                      <p>Lưu trữ: {getSubscriptionPackageInfo(formData.subscriptionPlan)?.limits.storage}GB</p>
-                      <p>Hỗ trợ: {getSubscriptionPackageInfo(formData.subscriptionPlan)?.limits.support}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="userLimit">Giới hạn người dùng</Label>
-                  <Input
-                    id="userLimit"
-                    type="number"
-                    value={formData.userLimit}
-                    onChange={(e) => setFormData(prev => ({ ...prev, userLimit: parseInt(e.target.value) || 50 }))}
-                    min="1"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>

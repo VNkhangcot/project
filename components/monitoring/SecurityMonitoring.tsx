@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+// import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Shield, Lock, Eye } from 'lucide-react';
 
@@ -76,7 +76,12 @@ export default function SecurityMonitoring() {
                     ? `${metric.value}%` 
                     : metric.value}
                 </div>
-                <Progress value={typeof metric.value === 'number' ? metric.value : 0} className="h-2" />
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full" 
+                    style={{ width: `${typeof metric.value === 'number' ? metric.value : 0}%` }}
+                  ></div>
+                </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   {metric.description}
                 </p>

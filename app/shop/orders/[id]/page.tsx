@@ -299,7 +299,7 @@ export default function OrderTrackingPage({ params }: OrderTrackingProps) {
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4">
                       <img
-                        src={item.image}
+                        src={item.image || '/api/placeholder/80/80'}
                         alt={item.name}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
@@ -325,7 +325,7 @@ export default function OrderTrackingPage({ params }: OrderTrackingProps) {
           </div>
 
           {/* Order Details Sidebar */}
-<div className="space-y-6 fixed top-0 right-0 h-full">
+          <div className="space-y-6">
             {/* Customer Info */}
             <Card>
               <CardHeader>
@@ -355,18 +355,10 @@ export default function OrderTrackingPage({ params }: OrderTrackingProps) {
             </Card>
 
             {/* Payment & Shipping */}
-<Card>
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <MessageCircle className="h-5 w-5" />
-      Thông báo
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <Button variant="outline" className="w-full gap-2">
-      Xem tất cả thông báo
-    </Button>
-  </CardContent>
+            <Card>
+              <CardHeader>
+                <CardTitle>Thanh toán & Vận chuyển</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span>Phương thức thanh toán:</span>

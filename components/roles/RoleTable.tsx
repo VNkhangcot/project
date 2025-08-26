@@ -135,7 +135,7 @@ export default function RoleTable({ onEditRole }: RoleTableProps) {
                           <Edit className="h-4 w-4 mr-2" />
                           Chỉnh sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600" disabled={role.userCount && role.userCount > 0}>
+                        <DropdownMenuItem className="text-red-600" disabled={Boolean(role.userCount && role.userCount > 0)}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Xóa
                         </DropdownMenuItem>

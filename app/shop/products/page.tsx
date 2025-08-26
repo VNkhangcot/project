@@ -23,6 +23,15 @@ import {
 import { mockProducts } from '@/lib/mockData';
 import { Product } from '@/lib/types';
 
+// Extended product type for UI with additional properties
+type ProductWithUI = Product & {
+  originalPrice?: number;
+  rating?: number;
+  reviews?: number;
+  isHot?: boolean;
+  inStock?: boolean;
+};
+
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -38,7 +47,7 @@ export default function ProductsPage() {
     { id: 'home', name: 'Gia dụng', count: 1 },
   ];
 
-  const filteredProducts = mockProducts.filter(product => {
+  const filteredProducts = (mockProducts as unknown as ProductWithUI[]).filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
@@ -54,7 +63,7 @@ export default function ProductsPage() {
       case 'price-high':
         return b.price - a.price;
       case 'rating':
-        return b.rating - a.rating;
+        return (b.rating || 0) - (a.rating || 0);
       case 'name':
       default:
         return a.name.localeCompare(b.name);
@@ -65,12 +74,12 @@ export default function ProductsPage() {
     return new Intl.NumberFormat('vi-VN').format(price) + ' đ';
   };
 
-  const ProductCard = ({ product }: { product: Product }) => (
+  const ProductCard = ({ product }: { product: ProductWithUI }) => (
     <Card className="group hover:shadow-lg transition-all duration-300">
       <CardContent className="p-0">
         <div className="relative overflow-hidden">
           <img
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -122,13 +131,13 @@ export default function ProductsPage() {
     </Card>
   );
 
-  const ProductListItem = ({ product }: { product: Product }) => (
+  const ProductListItem = ({ product }: { product: ProductWithUI }) => (
     <Card className="mb-4">
       <CardContent className="p-4">
         <div className="flex gap-4">
           <div className="relative">
             <img
-              src={product.image}
+              src={product.images[0]}
               alt={product.name}
               className="w-32 h-32 object-cover rounded-lg"
             />
@@ -324,13 +333,13 @@ export default function ProductsPage() {
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         ) : (
           <div>
             {sortedProducts.map((product) => (
-              <ProductListItem key={product.id} product={product} />
+              <ProductListItem key={product._id} product={product} />
             ))}
           </div>
         )}
