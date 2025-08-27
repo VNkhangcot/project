@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Home,
   Package,
@@ -45,9 +46,29 @@ interface UserLayoutProps {
   children: React.ReactNode;
 }
 
-const navigation = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: any;
+  children?: Array<{
+    name: string;
+    href: string;
+  }>;
+}
+
+// Các chức năng của người dùng
+const userNavigation: NavigationItem[] = [
   { name: 'Trang chủ', href: '/shop', icon: Home },
   { name: 'Sản phẩm', href: '/shop/products', icon: Package },
+  { name: 'Đơn hàng', href: '/shop/orders', icon: BarChart3 },
+  { name: 'Yêu thích', href: '/shop/wishlist', icon: Heart },
+  { name: 'Đánh giá', href: '/shop/reviews', icon: Star },
+  { name: 'Đăng ký doanh nghiệp', href: '/shop/enterprise/register', icon: Building2 },
+  { name: 'Hồ sơ', href: '/shop/profile', icon: User },
+];
+
+// Các chức năng liên quan đến công việc
+const workNavigation: NavigationItem[] = [
   { 
     name: 'Tìm việc', 
     href: '/shop/jobs', 
@@ -119,41 +140,93 @@ const navigation = [
       { name: 'Báo cáo bán hàng', href: '/shop/cafe/reports' }
     ]
   },
-  { name: 'Đơn hàng', href: '/shop/orders', icon: BarChart3 },
-  { name: 'Yêu thích', href: '/shop/wishlist', icon: Heart },
-  { name: 'Đánh giá', href: '/shop/reviews', icon: Star },
-  { name: 'Đăng ký doanh nghiệp', href: '/shop/enterprise/register', icon: Building2 },
-  { name: 'Hồ sơ', href: '/shop/profile', icon: User },
 ];
 
 export default function UserLayout({ children }: UserLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<'user' | 'work'>('user');
+
+  // Khôi phục trạng thái tab từ localStorage khi component mount (chỉ chạy ở client)
+  useEffect(() => {
+    const savedTab = localStorage.getItem('activeTab');
+    if (savedTab === 'user' || savedTab === 'work') {
+      setActiveTab(savedTab);
+    }
+  }, []);
   const pathname = usePathname();
   const { user, logout } = useAuth();
+
+  // Xác định menu hiện tại dựa trên tab đang chọn
+  const currentNavigation = activeTab === 'user' ? userNavigation : workNavigation;
+
+  // Đảm bảo tab được cập nhật khi component re-render
+  useEffect(() => {
+    // Cập nhật lại tab khi activeTab thay đổi
+    const updateTabs = () => {
+      const tabsElements = document.querySelectorAll('[role="tab"]');
+      tabsElements.forEach(tab => {
+        if (tab.getAttribute('data-state') === 'active' && tab.getAttribute('value') !== activeTab) {
+          (tab as HTMLElement).click();
+        }
+      });
+    };
+    
+    // Thực hiện cập nhật
+    updateTabs();
+  }, [activeTab]);
 
   // Auto-expand parent menu when on child page
   useEffect(() => {
     const autoExpandParents = () => {
       const newExpanded: string[] = [];
       
-      navigation.forEach(item => {
-        if (item.children) {
-          const hasActiveChild = item.children.some((child: any) => pathname === child.href);
-          if (hasActiveChild && !expandedItems.includes(item.name)) {
-            newExpanded.push(item.name);
+      // Kiểm tra trong cả hai menu
+      const checkNavigation = (items: NavigationItem[]) => {
+        items.forEach(item => {
+          if (item.children) {
+            const hasActiveChild = item.children.some(child => pathname === child.href);
+            if (hasActiveChild && !expandedItems.includes(item.name)) {
+              newExpanded.push(item.name);
+            }
           }
-        }
-      });
+        });
+      };
+      
+      checkNavigation(userNavigation);
+      checkNavigation(workNavigation);
       
       if (newExpanded.length > 0) {
         setExpandedItems(prev => [...prev, ...newExpanded]);
       }
+      
+      // Chỉ tự động chuyển tab khi lần đầu tải trang và chỉ ở phía client
+      if (typeof window !== 'undefined') {
+        const tabManuallySelected = window.sessionStorage.getItem('tabManuallySelected');
+        if (!tabManuallySelected) {
+          // Tự động chuyển tab dựa trên đường dẫn hiện tại
+          const isUserPath = userNavigation.some(item => 
+            pathname === item.href || 
+            (item.children && item.children.some(child => pathname === child.href))
+          );
+          
+          const isWorkPath = workNavigation.some(item => 
+            pathname === item.href || 
+            (item.children && item.children.some(child => pathname === child.href))
+          );
+          
+          if (isUserPath && activeTab !== 'user') {
+            setActiveTab('user');
+          } else if (isWorkPath && activeTab !== 'work') {
+            setActiveTab('work');
+          }
+        }
+      }
     };
 
     autoExpandParents();
-  }, [pathname]);
+  }, [pathname, expandedItems, activeTab]);
 
   const handleLogout = () => {
     logout();
@@ -167,7 +240,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
     );
   };
 
-  const renderNavigationItem = (item: any, isMobile = false) => {
+  const renderNavigationItem = (item: NavigationItem, isMobile = false) => {
     const isActive = pathname === item.href;
     const isExpanded = expandedItems.includes(item.name);
     const hasChildren = item.children && item.children.length > 0;
@@ -179,7 +252,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
             onClick={() => toggleExpanded(item.name)}
             className={cn(
               'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-              isActive || item.children.some((child: any) => pathname === child.href)
+              isActive || (item.children && item.children.some(child => pathname === child.href))
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
                 : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
             )}
@@ -194,9 +267,9 @@ export default function UserLayout({ children }: UserLayoutProps) {
               <ChevronRight className="h-4 w-4" />
             )}
           </button>
-          {isExpanded && (
+          {isExpanded && item.children && (
             <div className="ml-6 mt-1 space-y-1">
-              {item.children.map((child: any) => {
+              {item.children.map(child => {
                 const childIsActive = pathname === child.href;
                 return (
                   <Link
@@ -364,8 +437,25 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 />
               </div>
             </div>
+            <div className="px-4 py-2">
+              <Tabs value={activeTab} onValueChange={(value) => {
+                console.log('Mobile tab changed to:', value);
+                // Đánh dấu rằng người dùng đã chọn tab thủ công
+                if (typeof window !== 'undefined') {
+                  window.sessionStorage.setItem('tabManuallySelected', 'true');
+                  // Lưu trạng thái tab vào localStorage
+                  localStorage.setItem('activeTab', value);
+                }
+                setActiveTab(value as 'user' | 'work');
+              }} className="w-full">
+                <TabsList className="w-full">
+                  <TabsTrigger value="user" className="flex-1">Người dùng</TabsTrigger>
+                  <TabsTrigger value="work" className="flex-1">Công việc</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
             <nav className="px-4 py-2 space-y-1">
-              {navigation.map((item) => renderNavigationItem(item, true))}
+              {currentNavigation.map((item) => renderNavigationItem(item, true))}
             </nav>
           </div>
         )}
@@ -375,8 +465,25 @@ export default function UserLayout({ children }: UserLayoutProps) {
       <div className="flex">
         {/* Sidebar - Desktop */}
         <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:top-16 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700">
+          <div className="px-4 pt-4">
+            <Tabs value={activeTab} onValueChange={(value) => {
+              console.log('Desktop tab changed to:', value);
+              // Đánh dấu rằng người dùng đã chọn tab thủ công
+              if (typeof window !== 'undefined') {
+                window.sessionStorage.setItem('tabManuallySelected', 'true');
+                // Lưu trạng thái tab vào localStorage
+                localStorage.setItem('activeTab', value);
+              }
+              setActiveTab(value as 'user' | 'work');
+            }} className="w-full">
+              <TabsList className="w-full">
+                <TabsTrigger value="user" className="flex-1">Người dùng</TabsTrigger>
+                <TabsTrigger value="work" className="flex-1">Công việc</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => renderNavigationItem(item, false))}
+            {currentNavigation.map((item) => renderNavigationItem(item, false))}
           </nav>
         </aside>
 

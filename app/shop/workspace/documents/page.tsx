@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
-  FileText, 
   FolderPlus, 
   Upload, 
   Download, 
@@ -20,7 +19,7 @@ import {
   File, 
   FileImage, 
   FileSpreadsheet, 
-  FileText as FileTextIcon
+  FileText
 } from 'lucide-react';
 import UserLayout from '@/components/layout/UserLayout';
 import { 
@@ -95,7 +94,7 @@ export default function DocumentsPage() {
   const getFileIcon = (type: string) => {
     switch (type) {
       case 'document':
-        return <FileTextIcon className="h-6 w-6 text-blue-500" />;
+        return <FileText className="h-6 w-6 text-blue-500" />;
       case 'spreadsheet':
         return <FileSpreadsheet className="h-6 w-6 text-green-500" />;
       case 'image':
