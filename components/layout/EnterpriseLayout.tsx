@@ -2,40 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Home,
-  Building2,
-  Users,
-  BarChart3,
-  FileText,
-  Settings,
-  Briefcase,
-  CreditCard,
-  ShoppingBag,
-  Package,
-  Warehouse,
-  Calendar,
-  MessageSquare,
-  Bell,
-  Search,
-  Menu,
-  X,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  PlusCircle
-} from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { 
+  Building2, 
+  LayoutDashboard, 
+  Users, 
+  Briefcase, 
+  CreditCard, 
+  Warehouse, 
+  BarChart3, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X, 
+  Search, 
+  Bell, 
+  ChevronDown, 
+  ChevronRight,
+  User
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -68,92 +62,96 @@ const businesses = [
   { id: 3, name: 'Cửa hàng thời trang Fashion', type: 'Bán lẻ' }
 ];
 
-// Các mục điều hướng chính
-const mainNavigation: NavigationItem[] = [
-  { name: 'Tổng quan', href: '/enterprise/dashboard', icon: Home },
-  { name: 'Doanh nghiệp', href: '/enterprise/businesses', icon: Building2 },
+// Các mục điều hướng
+const navigation: NavigationItem[] = [
+  { name: 'Dashboard', href: '/enterprise/dashboard', icon: LayoutDashboard },
   { 
-    name: 'Nhân sự', 
+    name: 'Quản lý nhân sự', 
     href: '/enterprise/hr', 
     icon: Users,
     children: [
       { name: 'Phòng ban', href: '/enterprise/hr/departments' },
       { name: 'Nhân viên', href: '/enterprise/hr/employees' },
       { name: 'Tuyển dụng', href: '/enterprise/hr/recruitment' },
-      { name: 'Chấm công', href: '/enterprise/hr/attendance' },
+      { name: 'Chấm công', href: '/enterprise/hr/attendance' }
     ]
   },
   { 
-    name: 'Tài chính', 
+    name: 'Quản lý tài chính', 
     href: '/enterprise/finance', 
     icon: CreditCard,
     children: [
       { name: 'Thu chi', href: '/enterprise/finance/transactions' },
       { name: 'Hóa đơn', href: '/enterprise/finance/invoices' },
       { name: 'Lương thưởng', href: '/enterprise/finance/payroll' },
-      { name: 'Báo cáo', href: '/enterprise/finance/reports' },
+      { name: 'Báo cáo tài chính', href: '/enterprise/finance/reports' }
     ]
   },
   { 
-    name: 'Sản phẩm', 
-    href: '/enterprise/products', 
-    icon: Package,
-    children: [
-      { name: 'Danh sách sản phẩm', href: '/enterprise/products/list' },
-      { name: 'Danh mục', href: '/enterprise/products/categories' },
-      { name: 'Nhà cung cấp', href: '/enterprise/products/suppliers' },
-    ]
-  },
-  { 
-    name: 'Kho hàng', 
+    name: 'Quản lý kho hàng', 
     href: '/enterprise/inventory', 
     icon: Warehouse,
     children: [
       { name: 'Tồn kho', href: '/enterprise/inventory/stock' },
       { name: 'Nhập kho', href: '/enterprise/inventory/import' },
       { name: 'Xuất kho', href: '/enterprise/inventory/export' },
-      { name: 'Kiểm kê', href: '/enterprise/inventory/check' },
+      { name: 'Kiểm kê', href: '/enterprise/inventory/check' }
     ]
   },
   { 
-    name: 'Bán hàng', 
+    name: 'Quản lý bán hàng', 
     href: '/enterprise/sales', 
-    icon: ShoppingBag,
+    icon: CreditCard,
     children: [
       { name: 'Đơn hàng', href: '/enterprise/sales/orders' },
       { name: 'Khách hàng', href: '/enterprise/sales/customers' },
       { name: 'Khuyến mãi', href: '/enterprise/sales/promotions' },
-      { name: 'Báo cáo', href: '/enterprise/sales/reports' },
+      { name: 'Báo cáo bán hàng', href: '/enterprise/sales/reports' }
     ]
   },
   { 
-    name: 'Văn phòng', 
-    href: '/enterprise/office', 
-    icon: Briefcase,
-    children: [
-      { name: 'Tài liệu', href: '/enterprise/office/documents' },
-      { name: 'Lịch làm việc', href: '/enterprise/office/calendar' },
-      { name: 'Tin nhắn', href: '/enterprise/office/messages' },
-      { name: 'Công việc', href: '/enterprise/office/tasks' },
-    ]
+    name: 'Báo cáo', 
+    href: '/enterprise/reports', 
+    icon: BarChart3 
   },
-  { name: 'Báo cáo', href: '/enterprise/reports', icon: BarChart3 },
-  { name: 'Cài đặt', href: '/enterprise/settings', icon: Settings },
+  { 
+    name: 'Cài đặt', 
+    href: '/enterprise/settings', 
+    icon: Settings 
+  }
 ];
 
 export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const [selectedBusiness, setSelectedBusiness] = useState<string>(businesses[0].id.toString());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBusiness, setSelectedBusiness] = useState('1');
+  const [user, setUser] = useState<any>(null);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  // Kiểm tra đăng nhập
+  useEffect(() => {
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('enterpriseUser') || sessionStorage.getItem('enterpriseUser');
+      
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else if (pathname !== '/enterprise/login') {
+        // Chuyển hướng đến trang đăng nhập nếu chưa đăng nhập
+        router.push('/enterprise/login');
+      }
+    };
+    
+    checkAuth();
+  }, [pathname, router]);
 
   // Auto-expand parent menu when on child page
   useEffect(() => {
     const autoExpandParents = () => {
       const newExpanded: string[] = [];
       
-      mainNavigation.forEach(item => {
+      navigation.forEach(item => {
         if (item.children) {
           const hasActiveChild = item.children.some(child => pathname === child.href);
           if (hasActiveChild && !expandedItems.includes(item.name)) {
@@ -171,7 +169,9 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
   }, [pathname, expandedItems]);
 
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('enterpriseUser');
+    sessionStorage.removeItem('enterpriseUser');
+    router.push('/enterprise/login');
   };
 
   const toggleExpanded = (itemName: string) => {
@@ -183,7 +183,8 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
   };
 
   const renderNavigationItem = (item: NavigationItem, isMobile = false) => {
-    const isActive = pathname === item.href;
+    const isActive = pathname === item.href || 
+                    (item.children && item.children.some(child => pathname === child.href));
     const isExpanded = expandedItems.includes(item.name);
     const hasChildren = item.children && item.children.length > 0;
 
@@ -194,7 +195,7 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
             onClick={() => toggleExpanded(item.name)}
             className={cn(
               'w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-              isActive || (item.children && item.children.some(child => pathname === child.href))
+              isActive
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
                 : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
             )}
@@ -253,6 +254,16 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
     );
   };
 
+  // Nếu chưa đăng nhập và không phải trang đăng nhập, không hiển thị layout
+  if (!user && pathname !== '/enterprise/login') {
+    return null;
+  }
+
+  // Nếu là trang đăng nhập, chỉ hiển thị nội dung
+  if (pathname === '/enterprise/login') {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
@@ -271,10 +282,10 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
               </Link>
             </div>
 
-            {/* Business Selector */}
-            <div className="hidden md:flex flex-1 max-w-xs mx-8">
+            {/* Business Selector - Desktop */}
+            <div className="hidden md:block flex-1 max-w-xs mx-8">
               <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger>
                   <SelectValue placeholder="Chọn doanh nghiệp" />
                 </SelectTrigger>
                 <SelectContent>
@@ -283,27 +294,26 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
                       {business.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="new">
-                    <div className="flex items-center text-blue-600">
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Thêm doanh nghiệp mới
-                    </div>
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Right side */}
-            <div className="flex items-center space-x-4">
-              {/* Search */}
-              <div className="hidden md:flex relative">
+            {/* Search Bar - Desktop */}
+            <div className="hidden md:flex flex-1 max-w-xs">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
+                  type="text"
                   placeholder="Tìm kiếm..."
-                  className="pl-10 w-64"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4"
                 />
               </div>
+            </div>
 
+            {/* Right side */}
+            <div className="flex items-center space-x-4">
               {/* Notifications */}
               <Button variant="ghost" size="sm" className="relative">
                 <Bell className="h-5 w-5" />
@@ -319,40 +329,24 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/avatar.png" alt={user?.name || 'User'} />
-                      <AvatarFallback>
-                        {user?.name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-blue-600" />
+                    </div>
                     <span className="hidden md:block text-sm font-medium">
-                      {user?.name || 'Người dùng'}
+                      {user?.email?.split('@')[0] || 'Người dùng'}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-3 py-2">
-                    <p className="text-sm font-medium">{user?.name}</p>
-                    <p className="text-xs text-slate-500">{user?.email}</p>
-                  </div>
+                  <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/enterprise/profile">
-                      <Users className="h-4 w-4 mr-2" />
-                      Hồ sơ cá nhân
-                    </Link>
+                  <DropdownMenuItem>
+                    <User className="h-4 w-4 mr-2" />
+                    Hồ sơ cá nhân
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/enterprise/businesses">
-                      <Building2 className="h-4 w-4 mr-2" />
-                      Quản lý doanh nghiệp
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/enterprise/settings">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Cài đặt
-                    </Link>
+                  <DropdownMenuItem>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Cài đặt
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600">
@@ -384,7 +378,7 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
           <div className="md:hidden border-t border-slate-200 dark:border-slate-700">
             <div className="px-4 py-2">
               <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger>
                   <SelectValue placeholder="Chọn doanh nghiệp" />
                 </SelectTrigger>
                 <SelectContent>
@@ -393,12 +387,6 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
                       {business.name}
                     </SelectItem>
                   ))}
-                  <SelectItem value="new">
-                    <div className="flex items-center text-blue-600">
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Thêm doanh nghiệp mới
-                    </div>
-                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -406,13 +394,16 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
+                  type="text"
                   placeholder="Tìm kiếm..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4"
                 />
               </div>
             </div>
             <nav className="px-4 py-2 space-y-1">
-              {mainNavigation.map((item) => renderNavigationItem(item, true))}
+              {navigation.map((item) => renderNavigationItem(item, true))}
             </nav>
           </div>
         )}
@@ -423,7 +414,7 @@ export default function EnterpriseLayout({ children }: EnterpriseLayoutProps) {
         {/* Sidebar - Desktop */}
         <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 md:top-16 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700">
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {mainNavigation.map((item) => renderNavigationItem(item, false))}
+            {navigation.map((item) => renderNavigationItem(item, false))}
           </nav>
         </aside>
 

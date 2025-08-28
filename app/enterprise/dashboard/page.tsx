@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Building2, Users, BarChart3, FileText, Settings, Briefcase, CreditCard, ShoppingBag, Package, Warehouse } from 'lucide-react';
 import Link from 'next/link';
 import EnterpriseLayout from '@/components/layout/EnterpriseLayout';
-import { BarChart, LineChart, PieChart } from '@/components/ui/chart';
+// import { BarChart, LineChart, PieChart } from '@/components/ui/chart';
 
 export default function EnterpriseDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -134,10 +134,9 @@ export default function EnterpriseDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <LineChart 
-                    data={{}}
-                    className="aspect-[4/3]"
-                  />
+                  <div className="aspect-[4/3] bg-slate-50 rounded-md flex items-center justify-center">
+                    <p className="text-muted-foreground text-sm">Biểu đồ doanh thu (Dữ liệu mẫu)</p>
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -148,10 +147,9 @@ export default function EnterpriseDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <PieChart 
-                    data={{}}
-                    className="aspect-[4/3]"
-                  />
+                  <div className="aspect-[4/3] bg-slate-50 rounded-md flex items-center justify-center">
+                    <p className="text-muted-foreground text-sm">Biểu đồ phân bố nhân viên (Dữ liệu mẫu)</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -305,10 +303,9 @@ export default function EnterpriseDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <BarChart 
-                  data={{}}
-                  className="aspect-[16/9]"
-                />
+                <div className="aspect-[16/9] bg-slate-50 rounded-md flex items-center justify-center">
+                  <p className="text-muted-foreground text-sm">Biểu đồ báo cáo doanh thu (Dữ liệu mẫu)</p>
+                </div>
               </CardContent>
             </Card>
             

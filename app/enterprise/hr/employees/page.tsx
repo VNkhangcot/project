@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Search, Edit, Trash2, Mail, Phone, MoreHorizontal, FileText, Calendar } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash2, Mail, Phone, MoreHorizontal, FileText, Calendar, Users } from 'lucide-react';
 import EnterpriseLayout from '@/components/layout/EnterpriseLayout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
