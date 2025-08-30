@@ -106,4 +106,22 @@ router.get('/recent-activities',
   dashboardController.getRecentActivities
 );
 
+/**
+ * @swagger
+ * /api/dashboard/server-metrics:
+ *   get:
+ *     summary: Get server metrics
+ *     tags: [Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Server metrics retrieved successfully
+ */
+router.get('/server-metrics',
+  authenticate,
+  authorize(['server_monitoring']),
+  dashboardController.getServerMetrics
+);
+
 module.exports = router;

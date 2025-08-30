@@ -199,5 +199,9 @@ module.exports = {
   sendDeleted,
   sendNoContent,
   asyncHandler,
-  formatValidationErrors
+  formatValidationErrors,
+  
+  // Aliases for backward compatibility
+  successResponse: sendSuccess,
+  errorResponse: sendError
 };

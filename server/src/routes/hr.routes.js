@@ -109,4 +109,69 @@ router.post('/attendance/checkout',
   hrController.checkOut
 );
 
+// Job listings routes
+router.get('/jobs',
+  authenticate,
+  authorize(['manage_hr', 'view_jobs']),
+  hrController.getJobs
+);
+
+router.post('/jobs',
+  authenticate,
+  authorize(['manage_hr', 'create_jobs']),
+  validateEmployee('create'),
+  hrController.createJob
+);
+
+router.get('/jobs/:id',
+  authenticate,
+  authorize(['manage_hr', 'view_jobs']),
+  validateParams(),
+  hrController.getJob
+);
+
+router.put('/jobs/:id',
+  authenticate,
+  authorize(['manage_hr', 'update_jobs']),
+  validateParams(),
+  validateEmployee('update'),
+  hrController.updateJob
+);
+
+router.delete('/jobs/:id',
+  authenticate,
+  authorize(['manage_hr', 'delete_jobs']),
+  validateParams(),
+  hrController.deleteJob
+);
+
+// Job applications routes
+router.get('/applications',
+  authenticate,
+  authorize(['manage_hr', 'view_applications']),
+  hrController.getApplications
+);
+
+router.post('/applications',
+  authenticate,
+  authorize(['manage_hr', 'create_applications']),
+  validateEmployee('create'),
+  hrController.createApplication
+);
+
+router.get('/applications/:id',
+  authenticate,
+  authorize(['manage_hr', 'view_applications']),
+  validateParams(),
+  hrController.getApplication
+);
+
+router.put('/applications/:id',
+  authenticate,
+  authorize(['manage_hr', 'update_applications']),
+  validateParams(),
+  validateEmployee('update'),
+  hrController.updateApplication
+);
+
 module.exports = router;

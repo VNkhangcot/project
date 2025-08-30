@@ -59,6 +59,14 @@ const roleSchema = new mongoose.Schema({
       'view_attendance',
       'manage_attendance',
       'manage_recruitment',
+      'view_jobs',
+      'create_jobs',
+      'update_jobs',
+      'delete_jobs',
+      'view_applications',
+      'create_applications',
+      'update_applications',
+      'delete_applications',
       
       // Finance management
       'manage_finance',
@@ -105,7 +113,6 @@ const roleSchema = new mongoose.Schema({
       'manage_business_types',
       
       // Shopping features
-      'view_products',
       'manage_cart',
       'place_orders',
       'write_reviews',
@@ -241,12 +248,45 @@ roleSchema.statics.createDefaultRoles = async function() {
       displayName: 'Super Administrator',
       description: 'Quyền quản trị tối cao của hệ thống',
       permissions: [
+        // Basic permissions
         'read', 'write', 'delete',
-        'manage_users', 'manage_roles', 'manage_enterprises',
-        'manage_hr', 'manage_finance', 'manage_inventory', 'manage_sales',
+        
+        // User management
+        'manage_users', 'view_users', 'create_users', 'update_users', 'delete_users',
+        
+        // Role management
+        'manage_roles', 'view_roles', 'create_roles', 'update_roles', 'delete_roles',
+        
+        // Enterprise management
+        'manage_enterprises', 'view_enterprises', 'create_enterprises', 'update_enterprises', 'delete_enterprises',
+        
+        // HR management
+        'manage_hr', 'view_employees', 'create_employees', 'update_employees', 'delete_employees',
+        'manage_departments', 'view_attendance', 'manage_attendance', 'manage_recruitment',
+        'view_jobs', 'create_jobs', 'update_jobs', 'delete_jobs',
+        'view_applications', 'create_applications', 'update_applications', 'delete_applications',
+        
+        // Finance management
+        'manage_finance', 'view_transactions', 'create_transactions', 'update_transactions', 'delete_transactions',
+        'manage_invoices', 'manage_payroll', 'view_financial_reports',
+        
+        // Inventory management
+        'manage_inventory', 'view_products', 'create_products', 'update_products', 'delete_products',
+        'manage_stock', 'view_stock_reports',
+        
+        // Sales management
+        'manage_sales', 'view_orders', 'create_orders', 'update_orders', 'delete_orders',
+        'manage_customers', 'manage_promotions', 'view_sales_reports',
+        
+        // Reports and analytics
         'view_analytics', 'view_reports', 'create_reports', 'export_data',
+        
+        // System management
         'system_settings', 'audit_logs', 'security_monitoring', 'server_monitoring',
-        'manage_notifications', 'manage_subscriptions', 'manage_business_types'
+        'manage_notifications', 'manage_subscriptions', 'manage_business_types',
+        
+        // Shopping features
+        'manage_cart', 'place_orders', 'write_reviews', 'manage_profile'
       ],
       isDefault: true,
       level: 10,

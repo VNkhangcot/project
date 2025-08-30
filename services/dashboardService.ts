@@ -1,57 +1,65 @@
 import { apiClient } from '@/lib/api';
 import { DashboardStats, SystemHealth, AuditLog, ApiResponse } from '@/lib/types';
-import { mockDashboardStats, mockSystemHealth, mockAuditLogs } from '@/lib/mockData';
 
 export class DashboardService {
   // Get dashboard statistics
-  static async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
-    // Mock implementation
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      status: 'success',
-      data: mockDashboardStats
-    };
-  }
-
-  // Get system health metrics
-  static async getSystemHealth(): Promise<ApiResponse<SystemHealth>> {
-    // Mock implementation
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      status: 'success',
-      data: mockSystemHealth
-    };
-  }
-
-  // Get recent activity
-  static async getRecentActivity(): Promise<ApiResponse<AuditLog[]>> {
-    // Mock implementation
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      status: 'success',
-      data: mockAuditLogs.slice(0, 5)
-    };
+  static async getStats(): Promise<ApiResponse<DashboardStats>> {
+    return apiClient.get<ApiResponse<DashboardStats>>('/dashboard/stats');
   }
 
   // Get analytics data
-  static async getAnalyticsData(period: '24h' | '7d' | '30d' = '7d'): Promise<ApiResponse<{
-    userActivity: Array<{
-      _id: { date: string; action: string };
-      count: number;
-    }>;
-    loginAttempts: Array<{
-      _id: { hour: number; action: string };
-      count: number;
-    }>;
-    period: string;
-  }>> {
+  static async getAnalytics(period: string = 'month'): Promise<ApiResponse<any>> {
     return apiClient.get<ApiResponse<any>>(`/dashboard/analytics?period=${period}`);
   }
 
-  // Get server metrics
+  // Get recent activities
+  static async getRecentActivities(limit: number = 10): Promise<ApiResponse<any[]>> {
+    return apiClient.get<ApiResponse<any[]>>(`/dashboard/recent-activities?limit=${limit}`);
+  }
+
+  // Get dashboard statistics (legacy method name)
+  static async getDashboardStats(): Promise<ApiResponse<DashboardStats>> {
+    return this.getStats();
+  }
+
+  // Get recent activity (legacy method name)
+  static async getRecentActivity(): Promise<ApiResponse<any[]>> {
+    return this.getRecentActivities(5);
+  }
+
+  // Get analytics data (legacy method name)
+  static async getAnalyticsData(period: '24h' | '7d' | '30d' = '7d'): Promise<ApiResponse<any>> {
+    const periodMap = {
+      '24h': 'today',
+      '7d': 'week',
+      '30d': 'month'
+    };
+    return this.getAnalytics(periodMap[period]);
+  }
+
+  // Get system health (mock for now)
+  static async getSystemHealth(): Promise<ApiResponse<SystemHealth>> {
+    // This will be implemented when we add system monitoring endpoints
+    return {
+      status: 'success',
+      data: {
+        cpu: {
+          usage: 45,
+          cores: 4
+        },
+        memory: {
+          total: 8192,
+          used: 3072,
+          free: 5120,
+          usage: 37.5
+        },
+        uptime: 86400,
+        loadAverage: [0.5, 0.7, 0.8]
+      }
+    } as ApiResponse<SystemHealth>;
+  }
+
+  // Get server metrics (mock for now)
   static async getServerMetrics(): Promise<ApiResponse<{
     cpu: { usage: number; cores: number };
     memory: { total: number; used: number; free: number; usage: number };
@@ -60,20 +68,42 @@ export class DashboardService {
     uptime: number;
     processes: { total: number; running: number; sleeping: number };
   }>> {
-    return apiClient.get<ApiResponse<any>>('/dashboard/server-metrics');
+    return {
+      status: 'success',
+      data: {
+        cpu: { usage: 45, cores: 4 },
+        memory: { total: 8192, used: 3072, free: 5120, usage: 37.5 },
+        disk: { total: 500000, used: 325000, free: 175000, usage: 65 },
+        network: { bytesIn: 1024000, bytesOut: 512000 },
+        uptime: 86400,
+        processes: { total: 150, running: 5, sleeping: 145 }
+      }
+    } as ApiResponse<any>;
   }
 
-  // Get security alerts
+  // Get security alerts (mock for now)
   static async getSecurityAlerts(): Promise<ApiResponse<{
     totalAlerts: number;
     criticalAlerts: number;
     recentAlerts: AuditLog[];
     alertsByType: Array<{ type: string; count: number }>;
   }>> {
-    return apiClient.get<ApiResponse<any>>('/dashboard/security-alerts');
+    return {
+      status: 'success',
+      data: {
+        totalAlerts: 5,
+        criticalAlerts: 1,
+        recentAlerts: [],
+        alertsByType: [
+          { type: 'Failed Login', count: 3 },
+          { type: 'Suspicious Activity', count: 1 },
+          { type: 'Permission Denied', count: 1 }
+        ]
+      }
+    } as ApiResponse<any>;
   }
 
-  // Get performance metrics over time
+  // Get performance metrics (mock for now)
   static async getPerformanceMetrics(period: '1h' | '24h' | '7d' = '24h'): Promise<ApiResponse<Array<{
     timestamp: string;
     cpu: number;
@@ -81,6 +111,23 @@ export class DashboardService {
     disk: number;
     network: number;
   }>>> {
-    return apiClient.get<ApiResponse<any>>(`/dashboard/performance?period=${period}`);
+    const now = new Date();
+    const data = [];
+    
+    for (let i = 0; i < 24; i++) {
+      const timestamp = new Date(now.getTime() - (23 - i) * 60 * 60 * 1000);
+      data.push({
+        timestamp: timestamp.toISOString(),
+        cpu: Math.random() * 100,
+        memory: Math.random() * 100,
+        disk: Math.random() * 100,
+        network: Math.random() * 1000
+      });
+    }
+
+    return {
+      status: 'success',
+      data
+    } as ApiResponse<any>;
   }
 }

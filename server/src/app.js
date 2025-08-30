@@ -14,7 +14,7 @@ const salesRoutes = require('./routes/sales.routes');
 const reportsRoutes = require('./routes/reports.routes');
 
 // Import middleware
-const errorHandler = require('./middleware/error.middleware');
+const { errorHandler } = require('./middleware/error.middleware');
 const notFound = require('./middleware/notFound.middleware');
 
 // Import utils
@@ -106,6 +106,25 @@ app.get('/', (req, res) => {
     documentation: '/api-docs',
     health: '/health',
     endpoints: {
+      auth: '/api/auth',
+      dashboard: '/api/dashboard',
+      hr: '/api/hr',
+      finance: '/api/finance',
+      inventory: '/api/inventory',
+      sales: '/api/sales',
+      reports: '/api/reports'
+    }
+  });
+});
+
+// API Root endpoint
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'API is running',
+    endpoints: {
+      health: '/health',
+      docs: '/api-docs',
       auth: '/api/auth',
       dashboard: '/api/dashboard',
       hr: '/api/hr',

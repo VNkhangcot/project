@@ -280,8 +280,62 @@ function calculateGrowthRate(currentValue, type) {
   return mockGrowthRates[type] || 0;
 }
 
+/**
+ * Get server metrics
+ */
+const getServerMetrics = asyncHandler(async (req, res) => {
+  try {
+    logger.info('Fetching server metrics', { userId: req.userId });
+
+    // Get actual Node.js process metrics
+    const memUsage = process.memoryUsage();
+    const cpuUsage = process.cpuUsage();
+    
+    // Mock server metrics data (in production, use actual system monitoring)
+    const metrics = {
+      cpu: {
+        usage: Math.floor(Math.random() * 100),
+        cores: require('os').cpus().length,
+        loadAverage: require('os').loadavg()
+      },
+      memory: {
+        total: Math.round(require('os').totalmem() / 1024 / 1024), // MB
+        used: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+        free: Math.round(require('os').freemem() / 1024 / 1024), // MB
+        usage: Math.round((memUsage.heapUsed / require('os').totalmem()) * 100)
+      },
+      disk: {
+        total: 500, // GB - mock data
+        used: Math.floor(Math.random() * 400),
+        free: 100,
+        usage: Math.floor(Math.random() * 80)
+      },
+      network: {
+        bytesIn: Math.floor(Math.random() * 1000000),
+        bytesOut: Math.floor(Math.random() * 800000),
+        packetsIn: Math.floor(Math.random() * 10000),
+        packetsOut: Math.floor(Math.random() * 8000)
+      },
+      uptime: Math.floor(process.uptime()),
+      processes: Math.floor(Math.random() * 200) + 50,
+      connections: Math.floor(Math.random() * 100) + 10,
+      platform: require('os').platform(),
+      nodeVersion: process.version,
+      hostname: require('os').hostname()
+    };
+
+    logger.info('Server metrics retrieved', { userId: req.userId });
+    return sendSuccess(res, metrics, 'Server metrics retrieved successfully');
+
+  } catch (error) {
+    logger.error('Error fetching server metrics:', error);
+    return sendError(res, 'Failed to fetch server metrics', 500);
+  }
+});
+
 module.exports = {
   getStats,
   getAnalytics,
-  getRecentActivities
+  getRecentActivities,
+  getServerMetrics
 };

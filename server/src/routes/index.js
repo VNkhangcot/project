@@ -146,6 +146,44 @@ const reportsRoutes = require('./reports.routes');
  *           format: date-time
  */
 
+// API Root endpoint
+router.get('/', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'API is running',
+    endpoints: {
+      health: '/health',
+      docs: '/api-docs',
+      auth: '/api/auth',
+      dashboard: '/api/dashboard',
+      hr: '/api/hr',
+      finance: '/api/finance',
+      inventory: '/api/inventory',
+      sales: '/api/sales',
+      reports: '/api/reports'
+    }
+  });
+});
+
+// API Root endpoint (for /api path)
+router.get('/api', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'API is running',
+    endpoints: {
+      health: '/health',
+      docs: '/api-docs',
+      auth: '/api/auth',
+      dashboard: '/api/dashboard',
+      hr: '/api/hr',
+      finance: '/api/finance',
+      inventory: '/api/inventory',
+      sales: '/api/sales',
+      reports: '/api/reports'
+    }
+  });
+});
+
 // Health check endpoint
 router.get('/health', (req, res) => {
   res.json({
@@ -180,4 +218,3 @@ router.use('/inventory', inventoryRoutes);
 router.use('/sales', salesRoutes);
 router.use('/reports', reportsRoutes);
 
-module.exports = router;

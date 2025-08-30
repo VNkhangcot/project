@@ -1,0 +1,71 @@
+# Các thư mục
+node_modules/
+dist/
+build/
+coverage/
+logs/
+tmp/
+temp/
+
+# Các tệp môi trường và cấu hình
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+config.local.js
+config.dev.js
+config.prod.js
+
+# Các tệp nhật ký
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Các tệp hệ thống
+.DS_Store
+Thumbs.db
+.directory
+
+# Các tệp IDE và trình soạn thảo
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Các tệp tạm thời
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Các tệp cơ sở dữ liệu
+*.sqlite
+*.db
+
+# Các tệp khóa và chứng chỉ
+*.pem
+*.key
+*.cert
+*.crt
+
+# Các tệp nén
+*.zip
+*.gz
+*.tar
+*.rar
+
+# Các tệp khác
+.cache/
+.npm/
+.eslintcache
+.stylelintcache

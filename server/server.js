@@ -33,10 +33,7 @@ app.use(cors({
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 
 // Connect to MongoDB
-mongoose.connect(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(MONGODB_URI)
 .then(() => {
   logger.info('Connected to MongoDB successfully');
   console.log('✅ Connected to MongoDB');

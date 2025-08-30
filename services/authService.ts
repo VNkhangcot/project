@@ -1,45 +1,36 @@
 import { apiClient } from '@/lib/api';
 import { LoginCredentials, RegisterData, AuthResponse, User, ApiResponse } from '@/lib/types';
-import { mockCredentials } from '@/lib/mockData';
 
 export class AuthService {
   // Login user
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Mock authentication for development
-    const mockUser = mockCredentials[credentials.email as keyof typeof mockCredentials];
+    const response = await apiClient.post<any>('/auth/login', credentials);
     
-    if (!mockUser || mockUser.password !== credentials.password) {
-      throw new Error('Email hoặc mật khẩu không đúng');
+    // Store tokens in localStorage
+    if (response.data?.tokens) {
+      localStorage.setItem('accessToken', response.data.tokens.accessToken);
+      localStorage.setItem('refreshToken', response.data.tokens.refreshToken);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
     }
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const response: AuthResponse = {
-      status: 'success',
-      message: 'Đăng nhập thành công',
-      token: 'mock-jwt-token-' + Date.now(),
-      data: mockUser.user
+    return {
+      status: response.status,
+      message: response.message,
+      token: response.data?.tokens?.accessToken || '',
+      data: response.data?.user
     };
-    
-    // Store token in localStorage
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(response.data));
-    
-    return response;
   }
 
   // Register user
   static async register(userData: RegisterData): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/register', userData);
+    const response = await apiClient.post<any>('/auth/register', userData);
     
-    // Store token in localStorage
-    if (response.token) {
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.data));
-    }
-    
-    return response;
+    return {
+      status: response.status,
+      message: response.message,
+      token: '',
+      data: response.data
+    };
   }
 
   // Logout user
@@ -49,22 +40,23 @@ export class AuthService {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear local storage
-      localStorage.removeItem('token');
+      // Always clear local storage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
     }
   }
 
   // Get current user
   static async getCurrentUser(): Promise<ApiResponse<User>> {
-    return apiClient.get<ApiResponse<User>>('/auth/me');
+    return apiClient.get<ApiResponse<User>>('/auth/profile');
   }
 
   // Update profile
   static async updateProfile(userData: Partial<User>): Promise<ApiResponse<User>> {
     const response = await apiClient.put<ApiResponse<User>>('/auth/profile', userData);
     
-    // Update user in localStorage
+    // Update stored user data
     if (response.data) {
       localStorage.setItem('user', JSON.stringify(response.data));
     }
@@ -76,8 +68,16 @@ export class AuthService {
   static async changePassword(passwordData: {
     currentPassword: string;
     newPassword: string;
+    confirmPassword: string;
   }): Promise<AuthResponse> {
-    return apiClient.put<AuthResponse>('/auth/change-password', passwordData);
+    const response = await apiClient.put<any>('/auth/change-password', passwordData);
+    
+    return {
+      status: response.status,
+      message: response.message,
+      token: '',
+      data: {} as User
+    };
   }
 
   // Forgot password
@@ -86,14 +86,54 @@ export class AuthService {
   }
 
   // Reset password
-  static async resetPassword(token: string, password: string): Promise<AuthResponse> {
-    return apiClient.put<AuthResponse>(`/auth/reset-password/${token}`, { password });
+  static async resetPassword(data: { token: string; password: string; confirmPassword: string }): Promise<AuthResponse> {
+    const response = await apiClient.post<any>('/auth/reset-password', data);
+    
+    return {
+      status: response.status,
+      message: response.message,
+      token: '',
+      data: {} as User
+    };
+  }
+
+  // Refresh token
+  static async refreshToken(): Promise<AuthResponse> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const response = await apiClient.post<any>('/auth/refresh-token', { refreshToken });
+    
+    // Update tokens
+    if (response.data) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+    
+    return {
+      status: response.status,
+      message: response.message,
+      token: response.data?.accessToken || '',
+      data: {} as User
+    };
+  }
+
+  // Verify email
+  static async verifyEmail(token: string): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>('/auth/verify-email', { token });
+  }
+
+  // Resend verification
+  static async resendVerification(): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>('/auth/resend-verification');
   }
 
   // Check if user is authenticated
   static isAuthenticated(): boolean {
     if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('token');
+    return !!localStorage.getItem('accessToken');
   }
 
   // Get stored user
@@ -106,6 +146,6 @@ export class AuthService {
   // Get stored token
   static getStoredToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('token');
+    return localStorage.getItem('accessToken');
   }
 }

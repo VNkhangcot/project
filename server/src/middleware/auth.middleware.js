@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { verifyAccessToken } = require('../config/jwt');
-const { sendUnauthorized, sendForbidden } = require('../utils/response');
+const { sendUnauthorized, sendForbidden, sendError } = require('../utils/response');
 const logger = require('../utils/logger');
 
 /**

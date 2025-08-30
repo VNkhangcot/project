@@ -70,4 +70,53 @@ router.post('/stock/out',
   inventoryController.stockOut
 );
 
+router.get('/stock/movements',
+  authenticate,
+  authorize(['manage_inventory', 'manage_stock']),
+  validateQuery(),
+  inventoryController.getStockMovements
+);
+
+router.get('/stock/report',
+  authenticate,
+  authorize(['manage_inventory', 'manage_stock']),
+  validateQuery(),
+  inventoryController.getStockReport
+);
+
+// Supplier routes
+router.get('/suppliers',
+  authenticate,
+  authorize(['manage_inventory']),
+  validateQuery(),
+  inventoryController.getSuppliers
+);
+
+router.get('/suppliers/:id',
+  authenticate,
+  authorize(['manage_inventory']),
+  validateParams(),
+  inventoryController.getSupplier
+);
+
+router.post('/suppliers',
+  authenticate,
+  authorize(['manage_inventory']),
+  inventoryController.createSupplier
+);
+
+router.put('/suppliers/:id',
+  authenticate,
+  authorize(['manage_inventory']),
+  validateParams(),
+  inventoryController.updateSupplier
+);
+
+// Stats route
+router.get('/stats',
+  authenticate,
+  authorize(['manage_inventory', 'view_analytics']),
+  inventoryController.getInventoryStats
+);
+
 module.exports = router;
